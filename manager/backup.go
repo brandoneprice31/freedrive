@@ -11,14 +11,16 @@ import (
 	"github.com/brandoneprice31/freedrive/service"
 )
 
-func (m *manager) Backup(backupPath string) {
+func (m *Manager) Backup(backupPath string) {
 	fmt.Printf("starting backup on %s\n", backupPath)
 
 	for _, s := range m.services {
-		err := s.NewBackup()
+		b, err := service.NewBackupBuffer(s)
 		if err != nil {
 			panic(err)
 		}
+
+		m.addBuffer(b)
 	}
 
 	d, err := loadDirectory(backupPath)
@@ -72,13 +74,12 @@ func loadDirectory(path string) (*directory, error) {
 				// You were tricked, this is a sub directory, let's load it.
 				fd, lErr := loadDirectory(fpath)
 				if lErr != nil {
-					return nil, lErr
+					continue
 				}
 				d.directories = append(d.directories, *fd)
 
 			} else if err != nil {
-				return nil, err
-
+				continue
 			} else {
 				// Append the files.
 				d.files = append(d.files, file{
@@ -93,11 +94,11 @@ func loadDirectory(path string) (*directory, error) {
 	return d, nil
 }
 
-func (m *manager) uploadContents(d *directory) error {
+func (m *Manager) uploadContents(d *directory) error {
 	return m.uploadDirectory(d, true)
 }
 
-func (m *manager) uploadDirectory(d *directory, skip bool) error {
+func (m *Manager) uploadDirectory(d *directory, skip bool) error {
 	dirData, err := json.Marshal(d)
 	if err != nil {
 		return err
@@ -132,17 +133,17 @@ func (m *manager) uploadDirectory(d *directory, skip bool) error {
 	return nil
 }
 
-func (m *manager) flushBackup() ([]storedServiceData, error) {
+func (m *Manager) flushBackup() ([]storedServiceData, error) {
 	var ssd []storedServiceData
-	for _, s := range m.services {
-		sds, err := s.FlushBackup()
+	for _, b := range m.bufs {
+		sds, err := b.FlushBackup()
 		if err != nil {
 			return nil, err
 		}
 
 		for _, sd := range sds {
 			ssd = append(ssd, storedServiceData{
-				ServiceType: s.Type(),
+				ServiceType: b.ServiceTye(),
 				ServiceData: sd.Data,
 			})
 		}
@@ -151,7 +152,7 @@ func (m *manager) flushBackup() ([]storedServiceData, error) {
 	return ssd, nil
 }
 
-func (m *manager) saveServiceData(path string, data []storedServiceData) error {
+func (m *Manager) saveServiceData(path string, data []storedServiceData) error {
 	err := os.Remove(path)
 	if err != nil {
 		return err
@@ -165,21 +166,21 @@ func (m *manager) saveServiceData(path string, data []storedServiceData) error {
 	return ioutil.WriteFile(path, jsonData, 0777)
 }
 
-func (m *manager) uploadData(data []byte, n int) error {
-	return m.randomService().Upload(data)
+func (m *Manager) uploadData(data []byte, n int) error {
+	return m.randomBuffer().Save(data)
 }
 
-func (m *manager) randomService() service.Service {
-	n := len(m.services)
+func (m *Manager) randomBuffer() *service.Buffer {
+	n := len(m.bufs)
 	randn := rand.Intn(n)
 
 	i := 0
-	for _, s := range m.services {
+	for _, b := range m.bufs {
 		if i == randn {
-			return s
+			return b
 		}
 		i++
 	}
 
-	return m.services[0]
+	return m.bufs[0]
 }

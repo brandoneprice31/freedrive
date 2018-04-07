@@ -5,12 +5,10 @@ type (
 		Type() ServiceType
 
 		NewBackup() error
-		Upload([]byte) error
-		FlushBackup() ([]ServiceData, error)
+		Upload([]byte) (*ServiceData, error)
 
 		NewDownload() error
-		Download(ServiceData) error
-		FlushDownload() ([][]byte, error)
+		Download(ServiceData) ([]byte, error)
 	}
 
 	ServiceType int

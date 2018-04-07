@@ -8,15 +8,11 @@ import (
 )
 
 type (
-	Manager interface {
-		Backup(string)
-		Download(string, string)
-	}
-
-	manager struct {
+	Manager struct {
 		config   config.Config
 		n        int
 		services map[service.ServiceType]service.Service
+		bufs     map[service.ServiceType]*service.Buffer
 	}
 
 	services struct {
@@ -50,14 +46,19 @@ var (
 	ErrNoKey = errors.New("no key")
 )
 
-func NewManager(c config.Config, ss ...service.Service) Manager {
+func NewManager(c config.Config, ss ...service.Service) *Manager {
 	ssMap := make(map[service.ServiceType]service.Service)
 	for i := range ss {
 		ssMap[ss[i].Type()] = ss[i]
 	}
-	return &manager{
+	return &Manager{
 		config:   c,
 		n:        len(ss),
 		services: ssMap,
+		bufs:     make(map[service.ServiceType]*service.Buffer),
 	}
+}
+
+func (m *Manager) addBuffer(b *service.Buffer) {
+	m.bufs[b.ServiceTye()] = b
 }
