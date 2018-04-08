@@ -27,7 +27,12 @@ func main() {
 		panic(err)
 	}
 
-	m := manager.NewManager(c, lfs)
+	bts, err := service.NewBraintreeService("q9t77sxx3jngp9qb", "s99bbz4mg8qqf4b4", "39f09de6aca920b82ffa982664b7fbaf")
+	if err != nil {
+		panic(err)
+	}
+
+	m := manager.NewManager(c, bts, lfs)
 
 	backupPath := os.Args[2]
 	m.Backup(backupPath)

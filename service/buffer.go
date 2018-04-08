@@ -3,12 +3,22 @@ package service
 import (
 	"encoding/json"
 	"sort"
+	"sync"
 )
 
 type (
 	Buffer struct {
-		service     Service
+		service Service
+
 		serviceData []ServiceData
+		wg          *sync.WaitGroup
+		sdMutex     *sync.Mutex
+		serviceErrs []error
+		seMutex     *sync.Mutex
+
+		concCount      int
+		concCountMutex *sync.Mutex
+		concCountCond  *sync.Cond
 
 		buf     []obj
 		bufSize int
@@ -27,10 +37,6 @@ type (
 	objs []obj
 )
 
-const (
-	MaxBufSize = 10000000
-)
-
 func (b *Buffer) ServiceTye() ServiceType {
 	return b.service.Type()
 }
@@ -41,9 +47,16 @@ func NewBackupBuffer(s Service) (*Buffer, error) {
 		return nil, err
 	}
 
+	concCountMutex := &sync.Mutex{}
+
 	return &Buffer{
-		service: s,
-		dataTag: 0,
+		service:        s,
+		wg:             &sync.WaitGroup{},
+		sdMutex:        &sync.Mutex{},
+		seMutex:        &sync.Mutex{},
+		concCountMutex: concCountMutex,
+		concCountCond:  sync.NewCond(concCountMutex),
+		dataTag:        0,
 	}, nil
 }
 
@@ -66,7 +79,7 @@ func (b *Buffer) save(o obj) error {
 		return nil
 	}
 
-	if b.bufSize == MaxBufSize {
+	if b.bufSize == b.service.BufferSize() {
 		err := b.uploadBuf()
 		if err != nil {
 			return err
@@ -76,7 +89,7 @@ func (b *Buffer) save(o obj) error {
 		b.bufSize = 0
 	}
 
-	spaceLeft := MaxBufSize - b.bufSize
+	spaceLeft := b.service.BufferSize() - b.bufSize
 
 	if spaceLeft >= len(o.Data) {
 		b.buf = append(b.buf, o)
@@ -106,13 +119,47 @@ func (b *Buffer) uploadBuf() error {
 		return err
 	}
 
-	sd, err := b.service.Upload(data)
-	if err != nil {
-		return err
-	}
+	b.wg.Add(1)
+	go func() {
+		b.concCountMutex.Lock()
+		for {
+			if b.concCount >= b.service.MaxThreads() {
+				b.concCountCond.Wait()
+			} else {
+				break
+			}
+		}
+		b.concCount++
+		b.concCountMutex.Unlock()
 
-	b.serviceData = append(b.serviceData, *sd)
+		sd, err := b.service.Upload(data)
+		if err != nil {
+			b.appendServiceErr(err)
+		} else {
+			b.appendServiceData(sd)
+		}
+
+		b.concCountMutex.Lock()
+		b.concCount--
+		b.concCountCond.Signal()
+		b.concCountMutex.Unlock()
+
+		b.wg.Done()
+	}()
+
 	return nil
+}
+
+func (b *Buffer) appendServiceData(sd *ServiceData) {
+	b.sdMutex.Lock()
+	b.serviceData = append(b.serviceData, *sd)
+	b.sdMutex.Unlock()
+}
+
+func (b *Buffer) appendServiceErr(err error) {
+	b.seMutex.Lock()
+	b.serviceErrs = append(b.serviceErrs, err)
+	b.seMutex.Unlock()
 }
 
 func (b *Buffer) FlushBackup() ([]ServiceData, error) {
@@ -121,6 +168,12 @@ func (b *Buffer) FlushBackup() ([]ServiceData, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	b.wg.Wait()
+
+	if len(b.serviceErrs) > 0 {
+		return nil, b.serviceErrs[0]
 	}
 
 	return b.serviceData, nil

@@ -3,6 +3,8 @@ package service
 type (
 	Service interface {
 		Type() ServiceType
+		BufferSize() int
+		MaxThreads() int
 
 		NewBackup() error
 		Upload([]byte) (*ServiceData, error)
@@ -20,5 +22,5 @@ type (
 
 const (
 	localFileSystemServiceType ServiceType = iota
-	googlePhotosServiceType    ServiceType = iota
+	braintreeServiceType       ServiceType = iota
 )

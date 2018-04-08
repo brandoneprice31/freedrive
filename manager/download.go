@@ -10,6 +10,8 @@ import (
 )
 
 func (m *Manager) Download(prefix, downloadToPath string) {
+	fmt.Printf("starting download to %s\n", downloadToPath)
+
 	k, err := loadKey(m.config.KeyPath)
 	if err != nil {
 		panic(err)
@@ -59,7 +61,7 @@ func (m *Manager) Download(prefix, downloadToPath string) {
 			dd = append(dd, d)
 			continue
 		}
-
+		fmt.Println(string(r))
 		fmt.Println(err.Error())
 	}
 

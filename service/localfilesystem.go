@@ -46,6 +46,14 @@ func (s *localFileSystem) Type() ServiceType {
 	return localFileSystemServiceType
 }
 
+func (s *localFileSystem) BufferSize() int {
+	return 10000
+}
+
+func (s *localFileSystem) MaxThreads() int {
+	return 1
+}
+
 func (s *localFileSystem) NewBackup() error {
 	err := os.RemoveAll(s.path)
 	if err != nil {
