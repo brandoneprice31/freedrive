@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
@@ -25,8 +25,9 @@ type (
 )
 
 const (
-	MaxTries   = 5
-	MaxTimeout = 5 * time.Second
+	MaxTries        = 5
+	MaxTimeout      = 5 * time.Second
+	NumCustomFields = 10
 )
 
 var (
@@ -68,7 +69,7 @@ func (s *braintreeService) Type() ServiceType {
 }
 
 func (s *braintreeService) BufferSize() int {
-	return 100
+	return 1800
 }
 
 func (s *braintreeService) MaxThreads() int {
@@ -80,11 +81,25 @@ func (s *braintreeService) NewBackup() error {
 }
 
 func (s *braintreeService) Upload(data []byte) (*ServiceData, error) {
+	cf := make(map[string]string)
+	for i := 1; i <= NumCustomFields; i++ {
+		start := (i - 1) * len(data) / NumCustomFields
+		end := i * len(data) / NumCustomFields
+
+		if start > len(data) {
+			break
+		}
+
+		if end > len(data) {
+			end = len(data)
+		}
+
+		cf[fmt.Sprintf("data%d", i)] = string(data[start:end])
+	}
+
 	c, err := s.api.Customer().Create(context.Background(), &braintree.CustomerRequest{
-		Email: randomEmail(),
-		CustomFields: map[string]string{
-			"data": string(data),
-		},
+		Email:        randomEmail(),
+		CustomFields: cf,
 	})
 	if err != nil {
 		return nil, err
@@ -105,12 +120,18 @@ func (s *braintreeService) Download(sd ServiceData) ([]byte, error) {
 		return nil, err
 	}
 
-	if data, ok := c.CustomFields["data"]; ok {
-		return []byte(data), nil
+	data := []byte{}
+	for i := 1; i <= NumCustomFields; i++ {
+		var cfData string
+		var ok bool
+		if cfData, ok = c.CustomFields[fmt.Sprintf("data%d", i)]; !ok {
+			break
+		}
 
+		data = append(data, []byte(cfData)...)
 	}
 
-	return nil, errors.New("could not get data from custom fields")
+	return data, nil
 }
 
 func randomEmail() string {

@@ -22,7 +22,7 @@ func main() {
 	fd := os.Args[1]
 	c := config.New("", "", fmt.Sprintf("%s/key", fd))
 
-	lfs, err := service.NewLocalFileSystemService(fmt.Sprintf("%s/lfs", fd))
+	_, err := service.NewLocalFileSystemService(fmt.Sprintf("%s/lfs", fd))
 	if err != nil {
 		panic(err)
 	}
@@ -32,7 +32,7 @@ func main() {
 		panic(err)
 	}
 
-	m := manager.NewManager(c, bts, lfs)
+	m := manager.NewManager(c, bts)
 
 	backupPath := os.Args[2]
 	m.Backup(backupPath)

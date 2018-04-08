@@ -26,6 +26,7 @@ type (
 		dataTag int
 
 		downloaded map[int][]obj
+		objMutex   *sync.Mutex
 	}
 
 	obj struct {
@@ -185,32 +186,70 @@ func NewDownloadBuffer(s Service) (*Buffer, error) {
 		return nil, err
 	}
 
+	concCountMutex := &sync.Mutex{}
+
 	return &Buffer{
-		service:    s,
-		downloaded: make(map[int][]obj),
+		service:        s,
+		downloaded:     make(map[int][]obj),
+		objMutex:       &sync.Mutex{},
+		seMutex:        &sync.Mutex{},
+		concCountMutex: concCountMutex,
+		concCountCond:  sync.NewCond(concCountMutex),
+		wg:             &sync.WaitGroup{},
 	}, nil
 }
 
 func (b *Buffer) Download(sd ServiceData) error {
-	data, err := b.service.Download(sd)
-	if err != nil {
-		return err
-	}
+	b.wg.Add(1)
+	go func() {
+		b.concCountMutex.Lock()
+		for {
+			if b.concCount >= b.service.MaxThreads() {
+				b.concCountCond.Wait()
+			} else {
+				break
+			}
+		}
+		b.concCount++
+		b.concCountMutex.Unlock()
 
-	var oo []obj
-	err = json.Unmarshal(data, &oo)
-	if err != nil {
-		return err
-	}
+		data, err := b.service.Download(sd)
+		if err != nil {
+			b.appendServiceErr(err)
 
-	for _, o := range oo {
-		b.downloaded[o.Tag] = append(b.downloaded[o.Tag], o)
-	}
+		} else {
+			var oo []obj
+			err = json.Unmarshal(data, &oo)
+			if err != nil {
+				b.appendServiceErr(err)
+
+			} else {
+				for _, o := range oo {
+					b.appendDownloaded(o)
+				}
+			}
+		}
+
+		b.concCountMutex.Lock()
+		b.concCount--
+		b.concCountCond.Signal()
+		b.concCountMutex.Unlock()
+
+		b.wg.Done()
+	}()
 
 	return nil
 }
 
+func (b *Buffer) appendDownloaded(o obj) {
+	b.objMutex.Lock()
+	b.downloaded[o.Tag] = append(b.downloaded[o.Tag], o)
+	b.objMutex.Unlock()
+}
+
 func (b *Buffer) FlushDownload() ([][]byte, error) {
+	b.wg.Wait()
+
 	dd := [][]byte{}
 	for _, oo := range b.downloaded {
 		sort.Sort(objs(oo))
