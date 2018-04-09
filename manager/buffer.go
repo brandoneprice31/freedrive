@@ -252,6 +252,10 @@ func (b *Buffer) appendDownloaded(o obj) {
 func (b *Buffer) FlushDownload() ([][]byte, error) {
 	b.wg.Wait()
 
+	if len(b.serviceErrs) > 0 {
+		return nil, b.serviceErrs[0]
+	}
+
 	dd := [][]byte{}
 	for _, oo := range b.downloaded {
 		sort.Sort(objs(oo))
