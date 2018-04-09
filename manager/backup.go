@@ -7,15 +7,13 @@ import (
 	"math/rand"
 	"os"
 	"strings"
-
-	"github.com/brandoneprice31/freedrive/service"
 )
 
 func (m *Manager) Backup(backupPath string) {
 	fmt.Printf("starting backup on %s\n", backupPath)
 
 	for _, s := range m.services {
-		b, err := service.NewBackupBuffer(s)
+		b, err := NewBackupBuffer(s)
 		if err != nil {
 			panic(err)
 		}
@@ -38,7 +36,7 @@ func (m *Manager) Backup(backupPath string) {
 		panic(err)
 	}
 
-	err = m.saveServiceData(m.config.KeyPath, serviceData)
+	err = m.saveServiceData(backupPath, m.config.KeyPath, serviceData)
 	if err != nil {
 		panic(err)
 	}
@@ -152,25 +150,30 @@ func (m *Manager) flushBackup() ([]storedServiceData, error) {
 	return ssd, nil
 }
 
-func (m *Manager) saveServiceData(path string, data []storedServiceData) error {
-	err := os.Remove(path)
+func (m *Manager) saveServiceData(backupPath, keyPath string, data []storedServiceData) error {
+	err := os.Remove(keyPath)
 	if err != nil {
 		return err
 	}
 
-	jsonData, err := json.Marshal(data)
+	k := key{
+		BackupPath:        backupPath,
+		StoredServiceData: data,
+	}
+
+	jsonData, err := json.Marshal(k)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(path, jsonData, 0777)
+	return ioutil.WriteFile(keyPath, jsonData, 0777)
 }
 
 func (m *Manager) uploadData(data []byte, n int) error {
 	return m.randomBuffer().Save(data)
 }
 
-func (m *Manager) randomBuffer() *service.Buffer {
+func (m *Manager) randomBuffer() *Buffer {
 	n := len(m.bufs)
 	randn := rand.Intn(n)
 

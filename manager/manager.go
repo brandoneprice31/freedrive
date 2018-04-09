@@ -12,7 +12,7 @@ type (
 		config   config.Config
 		n        int
 		services map[service.ServiceType]service.Service
-		bufs     map[service.ServiceType]*service.Buffer
+		bufs     map[service.ServiceType]*Buffer
 	}
 
 	services struct {
@@ -20,8 +20,8 @@ type (
 	}
 
 	key struct {
-		path              string
-		storedServiceData []storedServiceData
+		BackupPath        string              `json:"backup_path"`
+		StoredServiceData []storedServiceData `json:"stored_service_data"`
 	}
 
 	storedServiceData struct {
@@ -55,10 +55,10 @@ func NewManager(c config.Config, ss ...service.Service) *Manager {
 		config:   c,
 		n:        len(ss),
 		services: ssMap,
-		bufs:     make(map[service.ServiceType]*service.Buffer),
+		bufs:     make(map[service.ServiceType]*Buffer),
 	}
 }
 
-func (m *Manager) addBuffer(b *service.Buffer) {
+func (m *Manager) addBuffer(b *Buffer) {
 	m.bufs[b.ServiceTye()] = b
 }

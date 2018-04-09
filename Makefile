@@ -1,4 +1,5 @@
-OUTPUT=bin/freedrive
+BACKUP=bin/backup
+DOWNLOAD=bin/download
 
 ifeq ($(TRAVIS), true)
 	CGO_ENABLED := 0
@@ -7,7 +8,11 @@ else
 endif
 
 build:
-	CGO_ENABLED=${CGO_ENABLED} go build -o ${OUTPUT} *.go
+	CGO_ENABLED=${CGO_ENABLED} go build -o ${BACKUP} cmd/backup/*.go
+	CGO_ENABLED=${CGO_ENABLED} go build -o ${DOWNLOAD} cmd/download/*.go
 
-run:
-	${OUTPUT} ${FD} ${BP} ${DL}
+backup:
+	${BACKUP} ${FD} ${BP}
+
+download:
+	${DOWNLOAD} ${FD} ${DL}

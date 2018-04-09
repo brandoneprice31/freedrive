@@ -9,7 +9,7 @@ import (
 	"github.com/brandoneprice31/freedrive/service"
 )
 
-func (m *Manager) Download(prefix, downloadToPath string) {
+func (m *Manager) Download(downloadToPath string) {
 	fmt.Printf("starting download to %s\n", downloadToPath)
 
 	k, err := loadKey(m.config.KeyPath)
@@ -17,13 +17,15 @@ func (m *Manager) Download(prefix, downloadToPath string) {
 		panic(err)
 	}
 
+	prefix := k.BackupPath
+
 	err = createDownloadFolder(downloadToPath)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, s := range m.services {
-		b, err := service.NewDownloadBuffer(s)
+		b, err := NewDownloadBuffer(s)
 		if err != nil {
 			panic(err)
 		}
@@ -33,7 +35,7 @@ func (m *Manager) Download(prefix, downloadToPath string) {
 
 	ff, dd := []file{}, []directory{}
 
-	for _, ssd := range k.storedServiceData {
+	for _, ssd := range k.StoredServiceData {
 		err := m.bufs[ssd.ServiceType].Download(service.ServiceData{
 			Data: ssd.ServiceData,
 		})
@@ -110,16 +112,13 @@ func loadKey(path string) (*key, error) {
 		return nil, err
 	}
 
-	var ssd []storedServiceData
-	err = json.Unmarshal(data, &ssd)
+	var k key
+	err = json.Unmarshal(data, &k)
 	if err != nil {
 		return nil, err
 	}
 
-	return &key{
-		path:              path,
-		storedServiceData: ssd,
-	}, nil
+	return &k, nil
 }
 
 func (m *Manager) flushDownload() ([][]byte, error) {

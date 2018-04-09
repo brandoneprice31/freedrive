@@ -19,6 +19,10 @@ type (
 	}
 )
 
+/*
+	localFileSystem is a demo service that simply stores the data on your local machine.
+*/
+
 func NewLocalFileSystemService(path string) (Service, error) {
 	data, err := ioutil.ReadFile(fmt.Sprintf("%s/last", path))
 	var lastNum int

@@ -1,16 +1,18 @@
-package service
+package manager
 
 import (
 	"encoding/json"
 	"sort"
 	"sync"
+
+	"github.com/brandoneprice31/freedrive/service"
 )
 
 type (
 	Buffer struct {
-		service Service
+		service service.Service
 
-		serviceData []ServiceData
+		serviceData []service.ServiceData
 		wg          *sync.WaitGroup
 		sdMutex     *sync.Mutex
 		serviceErrs []error
@@ -38,11 +40,11 @@ type (
 	objs []obj
 )
 
-func (b *Buffer) ServiceTye() ServiceType {
+func (b *Buffer) ServiceTye() service.ServiceType {
 	return b.service.Type()
 }
 
-func NewBackupBuffer(s Service) (*Buffer, error) {
+func NewBackupBuffer(s service.Service) (*Buffer, error) {
 	err := s.NewBackup()
 	if err != nil {
 		return nil, err
@@ -151,7 +153,7 @@ func (b *Buffer) uploadBuf() error {
 	return nil
 }
 
-func (b *Buffer) appendServiceData(sd *ServiceData) {
+func (b *Buffer) appendServiceData(sd *service.ServiceData) {
 	b.sdMutex.Lock()
 	b.serviceData = append(b.serviceData, *sd)
 	b.sdMutex.Unlock()
@@ -163,7 +165,7 @@ func (b *Buffer) appendServiceErr(err error) {
 	b.seMutex.Unlock()
 }
 
-func (b *Buffer) FlushBackup() ([]ServiceData, error) {
+func (b *Buffer) FlushBackup() ([]service.ServiceData, error) {
 	if b.bufSize > 0 {
 		err := b.uploadBuf()
 		if err != nil {
@@ -180,7 +182,7 @@ func (b *Buffer) FlushBackup() ([]ServiceData, error) {
 	return b.serviceData, nil
 }
 
-func NewDownloadBuffer(s Service) (*Buffer, error) {
+func NewDownloadBuffer(s service.Service) (*Buffer, error) {
 	err := s.NewDownload()
 	if err != nil {
 		return nil, err
@@ -199,7 +201,7 @@ func NewDownloadBuffer(s Service) (*Buffer, error) {
 	}, nil
 }
 
-func (b *Buffer) Download(sd ServiceData) error {
+func (b *Buffer) Download(sd service.ServiceData) error {
 	b.wg.Add(1)
 	go func() {
 		b.concCountMutex.Lock()

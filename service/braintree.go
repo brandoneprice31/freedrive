@@ -25,14 +25,20 @@ type (
 )
 
 const (
-	MaxTries        = 5
-	MaxTimeout      = 5 * time.Second
-	NumCustomFields = 10
+	MaxTries         = 5
+	MaxTimeout       = 5 * time.Second
+	NumCustomFields  = 10
+	MaxBytesPerField = 180
 )
 
 var (
 	letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 )
+
+/*
+	braintreeService stores data on the braintree sandbox.  Your data will be broken into
+	multiple CustomFields on multiple generated Customers with random emails.
+*/
 
 func NewBraintreeService(merchID, pubKey, privKey string) (Service, error) {
 	// Create retry transport for retrying on io.EOF errors.
@@ -69,7 +75,7 @@ func (s *braintreeService) Type() ServiceType {
 }
 
 func (s *braintreeService) BufferSize() int {
-	return 1800
+	return MaxBytesPerField * NumCustomFields
 }
 
 func (s *braintreeService) MaxThreads() int {
