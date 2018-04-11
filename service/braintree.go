@@ -27,8 +27,8 @@ type (
 const (
 	MaxTries         = 5
 	MaxTimeout       = 5 * time.Second
-	NumCustomFields  = 10
-	MaxBytesPerField = 180
+	NumCustomFields  = 25
+	MaxBytesPerField = 150
 )
 
 var (

@@ -11,7 +11,7 @@ import (
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println(`3 args are required:
+		fmt.Println(`2 args are required:
  - path/to/freedrive/dir
  - path/to/download/folder
  		`)
