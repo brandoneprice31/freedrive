@@ -31,7 +31,12 @@ func main() {
 		panic(err)
 	}
 
-	m := manager.NewManager(c, bts)
+	dbs, err := service.NewDropboxService("pYTxO8EdjVEAAAAAAAAF_JqkFisAR6HLpjNlBSy1crQ_xtw1aTMiHx5aS0VV4UgW")
+	if err != nil {
+		panic(err)
+	}
+
+	m := manager.NewManager(c, bts, dbs)
 
 	backupPath := os.Args[2]
 	m.Backup(backupPath)

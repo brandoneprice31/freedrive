@@ -8,6 +8,23 @@
   revision = "11cf6ea5d3e9afda34846e1db511aa218049471c"
 
 [[projects]]
+  name = "github.com/dropbox/dropbox-sdk-go-unofficial"
+  packages = [
+    "dropbox",
+    "dropbox/async",
+    "dropbox/file_properties",
+    "dropbox/files"
+  ]
+  revision = "81ac5b288ffc03b166174f520cdc0b227461450e"
+  version = "v4.0.0"
+
+[[projects]]
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/lionelbarrow/braintree-go"
   packages = [
     ".",
@@ -18,9 +35,41 @@
   revision = "0e307064483e3d0335e35feb5df8e9bca68d019c"
   version = "v0.18.0"
 
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = [
+    "context",
+    "context/ctxhttp"
+  ]
+  revision = "61147c48b25b599e5b561d2e9c4f3e1ef489ca41"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/oauth2"
+  packages = [
+    ".",
+    "internal"
+  ]
+  revision = "921ae394b9430ed4fb549668d7b087601bd60a81"
+
+[[projects]]
+  name = "google.golang.org/appengine"
+  packages = [
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch"
+  ]
+  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
+  version = "v1.0.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3632394e3d5681e4645f2899b770f038a2cc6f31c52b781aba25d9a396a0d293"
+  inputs-digest = "384404689ccf18c8f2be6348032f8489ca49ff9e2df6b6dbe4649d660a986543"
   solver-name = "gps-cdcl"
   solver-version = 1

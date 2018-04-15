@@ -37,4 +37,5 @@ type (
 const (
 	localFileSystemServiceType ServiceType = iota
 	braintreeServiceType       ServiceType = iota
+	dropboxServiceType         ServiceType = iota
 )
