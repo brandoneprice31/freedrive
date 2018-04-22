@@ -16,6 +16,9 @@ type (
 		// NewBackup prepares the service for backing up data.
 		NewBackup() error
 
+		// Removes data from the service given an array of ServiceData.
+		Remove([]ServiceData) error
+
 		// Upload takes in bytes, stores it on your service, and returns the ServiceData
 		// necessary to retrieve these bytes.
 		Upload([]byte) (*ServiceData, error)
@@ -38,4 +41,5 @@ const (
 	localFileSystemServiceType ServiceType = iota
 	braintreeServiceType       ServiceType = iota
 	dropboxServiceType         ServiceType = iota
+	twitterServiceType         ServiceType = iota
 )

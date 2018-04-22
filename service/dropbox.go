@@ -45,6 +45,17 @@ func (s *dropboxService) NewBackup() error {
 	return nil
 }
 
+func (s *dropboxService) Remove(sds []ServiceData) error {
+	arg := make([]*files.DeleteArg, len(sds))
+	for i, sd := range sds {
+		arg[i] = files.NewDeleteArg(string(sd.Data))
+	}
+	args := files.NewDeleteBatchArg(arg)
+	s.api.DeleteBatch(args)
+
+	return nil
+}
+
 func (s *dropboxService) Upload(data []byte) (*ServiceData, error) {
 	r := bytes.NewReader(data)
 	ci := files.NewCommitInfoWithProperties("/freedrive/" + randomFileName())

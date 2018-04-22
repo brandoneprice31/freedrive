@@ -86,6 +86,14 @@ func (s *braintreeService) NewBackup() error {
 	return nil
 }
 
+func (s *braintreeService) Remove(sds []ServiceData) error {
+	for _, sd := range sds {
+		s.api.Customer().Delete(context.Background(), string(sd.Data))
+	}
+
+	return nil
+}
+
 func (s *braintreeService) Upload(data []byte) (*ServiceData, error) {
 	cf := make(map[string]string)
 	for i := 1; i <= NumCustomFields; i++ {

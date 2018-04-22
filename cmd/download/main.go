@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/brandoneprice31/freedrive/config"
-	"github.com/brandoneprice31/freedrive/manager"
-	"github.com/brandoneprice31/freedrive/service"
+	"github.com/brandoneprice31/freedrive/setup"
 )
 
 func main() {
@@ -19,25 +17,11 @@ func main() {
 	}
 
 	fd := os.Args[1]
-	c := config.New("", "", fmt.Sprintf("%s/key", fd))
-
-	_, err := service.NewLocalFileSystemService(fmt.Sprintf("%s/lfs", fd))
+	m, err := setup.Manager(fd)
 	if err != nil {
 		panic(err)
 	}
 
-	bts, err := service.NewBraintreeService("q9t77sxx3jngp9qb", "s99bbz4mg8qqf4b4", "39f09de6aca920b82ffa982664b7fbaf")
-	if err != nil {
-		panic(err)
-	}
-
-	dbs, err := service.NewDropboxService("pYTxO8EdjVEAAAAAAAAF_JqkFisAR6HLpjNlBSy1crQ_xtw1aTMiHx5aS0VV4UgW")
-	if err != nil {
-		panic(err)
-	}
-
-	m := manager.NewManager(c, bts, dbs)
-
-	downloadPath := os.Args[2]
-	m.Download(downloadPath)
+	dl := os.Args[2]
+	m.Download(dl)
 }

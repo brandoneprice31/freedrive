@@ -73,6 +73,10 @@ func (s *localFileSystem) NewBackup() error {
 	return nil
 }
 
+func (s *localFileSystem) Remove(sds []ServiceData) error {
+	return nil
+}
+
 func (s *localFileSystem) Upload(data []byte) (*ServiceData, error) {
 	fpath := fmt.Sprintf("%s/%d", s.path, s.totalFiles)
 

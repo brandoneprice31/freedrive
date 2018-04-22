@@ -7,19 +7,46 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"sync"
+
+	"github.com/brandoneprice31/freedrive/service"
 )
 
 func (m *Manager) Backup(backupPath string) {
-	fmt.Printf("starting backup on %s\n", backupPath)
+	fmt.Println("removing old backup")
 
-	for _, s := range m.services {
+	k, err := loadKey(m.config.KeyPath)
+	if err != nil {
+		panic(err)
+	}
+
+	oldSD := make(map[service.ServiceType][]service.ServiceData)
+	for _, sd := range k.StoredServiceData {
+		oldSD[sd.ServiceType] = append(oldSD[sd.ServiceType], service.ServiceData{
+			Data: sd.ServiceData,
+		})
+	}
+
+	var wg sync.WaitGroup
+	for i := range m.services {
+		s := m.services[i]
 		b, err := NewBackupBuffer(s)
 		if err != nil {
 			panic(err)
 		}
 
 		m.addBuffer(b)
+
+		// Remove old service data.
+		wg.Add(1)
+		go func() {
+			s.Remove(oldSD[s.Type()])
+			wg.Done()
+		}()
 	}
+	wg.Wait()
+
+	fmt.Printf("starting backup on %s\n", backupPath)
 
 	d, err := loadDirectory(backupPath)
 	if err != nil {
