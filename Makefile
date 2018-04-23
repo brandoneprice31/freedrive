@@ -12,7 +12,7 @@ build:
 	CGO_ENABLED=${CGO_ENABLED} go build -o ${DOWNLOAD} cmd/download/*.go
 
 backup:
-	${BACKUP} ${FD} ${BP}
+	${BACKUP}
 
 download:
-	${DOWNLOAD} ${FD} ${DL}
+	${DOWNLOAD}

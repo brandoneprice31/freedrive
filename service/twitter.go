@@ -25,7 +25,7 @@ func (s *twitterService) Type() ServiceType {
 }
 
 func (s *twitterService) BufferSize() int {
-	return 160
+	return 120
 }
 
 func (s *twitterService) MaxThreads() int {

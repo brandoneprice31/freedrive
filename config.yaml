@@ -1,0 +1,17 @@
+paths:
+  freedrive: /Users/gametime/freedrive
+  backup: /Users/gametime/freedrive-test
+
+braintree:
+  merchant_id: q9t77sxx3jngp9qb
+  public_key: s99bbz4mg8qqf4b4
+  private_key: 39f09de6aca920b82ffa982664b7fbaf
+
+dropbox:
+  access_token: pYTxO8EdjVEAAAAAAAAF_JqkFisAR6HLpjNlBSy1crQ_xtw1aTMiHx5aS0VV4UgW
+
+twitter:
+  access_token: 988142103086751744-JvWk6EHpy1O0WDYkNvUhKqKeztdlrSm
+  access_secret: fqQwBgtyJBoyyCqH6GpogP4OBJ4O7RIhBc5gdzhcTFxPR
+  consumer_key: ex1gHG1AFYCf8powfJAofgU4j
+  consumer_secret: qtyge4EfEtA9vBzGguLMX30HPVrZhUu0yni1i56E8N7eYQGyim

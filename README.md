@@ -8,8 +8,9 @@ free storage for all
 - make a directory for storing freedrive keys: `mkdir /path/to/freedrive/dir`
 
 ### usage
-- backup: `FD=/path/to/freedrive/dir BP=/path/to/backup/dir make backup`
-- download: `FD=/path/to/freedrive/dir DL=/path/to/download/dir make download`
+- setup the `config.yaml` file with your credentials
+- backup: `make backup`
+- download: `make download`
 
 ### creating a new service
 - fork this repo

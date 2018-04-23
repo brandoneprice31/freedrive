@@ -12,12 +12,12 @@ import (
 	"github.com/brandoneprice31/freedrive/service"
 )
 
-func (m *Manager) Backup(backupPath string) {
+func (m *Manager) Backup() {
 	fmt.Println("removing old backup")
 
-	k, err := loadKey(m.config.KeyPath)
+	k, err := loadKey(m.config.Paths.Freedrive)
 	if err == ErrNoKey {
-		os.Mkdir(m.config.KeyPath, 0777)
+		os.Mkdir(m.config.Paths.Freedrive, 0777)
 	} else if err != nil {
 		panic(err)
 	}
@@ -48,9 +48,9 @@ func (m *Manager) Backup(backupPath string) {
 	}
 	wg.Wait()
 
-	fmt.Printf("starting backup on %s\n", backupPath)
+	fmt.Printf("starting backup on %s\n", m.config.Paths.Backup)
 
-	d, err := loadDirectory(backupPath)
+	d, err := loadDirectory(m.config.Paths.Backup)
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +65,7 @@ func (m *Manager) Backup(backupPath string) {
 		panic(err)
 	}
 
-	err = m.saveServiceData(backupPath, m.config.KeyPath, serviceData)
+	err = m.saveServiceData(m.config.Paths.Backup, m.config.Paths.Freedrive, serviceData)
 	if err != nil {
 		panic(err)
 	}

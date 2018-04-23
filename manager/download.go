@@ -9,17 +9,17 @@ import (
 	"github.com/brandoneprice31/freedrive/service"
 )
 
-func (m *Manager) Download(downloadToPath string) {
-	fmt.Printf("starting download to %s\n", downloadToPath)
+func (m *Manager) Download() {
+	fmt.Printf("starting download to %s\n", m.config.Paths.Backup)
 
-	k, err := loadKey(m.config.KeyPath)
+	k, err := loadKey(m.config.Paths.Freedrive)
 	if err != nil {
 		panic(err)
 	}
 
 	prefix := k.BackupPath
 
-	err = createDownloadFolder(downloadToPath)
+	err = createDownloadFolder(m.config.Paths.Backup)
 	if err != nil {
 		panic(err)
 	}
@@ -68,14 +68,14 @@ func (m *Manager) Download(downloadToPath string) {
 	}
 
 	for _, d := range dd {
-		err := createDirectory(prefix, downloadToPath, d)
+		err := createDirectory(prefix, m.config.Paths.Backup, d)
 		if err != nil {
 			panic(err)
 		}
 	}
 
 	for _, f := range ff {
-		err := createFile(prefix, downloadToPath, f)
+		err := createFile(prefix, m.config.Paths.Backup, f)
 		if err != nil {
 			panic(err)
 		}
