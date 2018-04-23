@@ -5,6 +5,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/brandoneprice31/freedrive/encrypt"
 	"github.com/brandoneprice31/freedrive/service"
 )
 
@@ -38,6 +39,10 @@ type (
 	}
 
 	objs []obj
+)
+
+var (
+	EncryptionKey = []byte("a very very very very secret key")
 )
 
 func (b *Buffer) ServiceTye() service.ServiceType {
@@ -135,7 +140,9 @@ func (b *Buffer) uploadBuf() error {
 		b.concCount++
 		b.concCountMutex.Unlock()
 
-		sd, err := b.service.Upload(data)
+		enc := encrypt.Encrypt(string(data), EncryptionKey)
+
+		sd, err := b.service.Upload([]byte(enc))
 		if err != nil {
 			b.appendServiceErr(err)
 		} else {
@@ -218,10 +225,11 @@ func (b *Buffer) Download(sd service.ServiceData) error {
 		data, err := b.service.Download(sd)
 		if err != nil {
 			b.appendServiceErr(err)
-
 		} else {
+			dec := encrypt.Decrypt(string(data), EncryptionKey)
+
 			var oo []obj
-			err = json.Unmarshal(data, &oo)
+			err = json.Unmarshal([]byte(dec), &oo)
 			if err != nil {
 				b.appendServiceErr(err)
 
@@ -230,6 +238,7 @@ func (b *Buffer) Download(sd service.ServiceData) error {
 					b.appendDownloaded(o)
 				}
 			}
+
 		}
 
 		b.concCountMutex.Lock()

@@ -1,7 +1,11 @@
 package manager
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"os"
 
 	"github.com/brandoneprice31/freedrive/config"
 	"github.com/brandoneprice31/freedrive/service"
@@ -61,4 +65,21 @@ func NewManager(c config.Config, ss ...service.Service) *Manager {
 
 func (m *Manager) addBuffer(b *Buffer) {
 	m.bufs[b.ServiceTye()] = b
+}
+
+func loadKey(path string) (*key, error) {
+	k := key{}
+	data, err := ioutil.ReadFile(path)
+	if pErr, ok := err.(*os.PathError); ok && pErr.Err.Error() == "no such file or directory" {
+		return &k, ErrNoKey
+	} else if err != nil {
+		return &k, err
+	}
+
+	err = json.Unmarshal(data, &k)
+	if err != nil {
+		fmt.Printf("err loading key: %s", err.Error())
+	}
+
+	return &k, nil
 }

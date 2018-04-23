@@ -11,12 +11,12 @@ import (
 func Manager(fd string) (*manager.Manager, error) {
 	c := config.New("", "", fmt.Sprintf("%s/key", fd))
 
-	_, err := service.NewBraintreeService("q9t77sxx3jngp9qb", "s99bbz4mg8qqf4b4", "39f09de6aca920b82ffa982664b7fbaf")
+	bts, err := service.NewBraintreeService("q9t77sxx3jngp9qb", "s99bbz4mg8qqf4b4", "39f09de6aca920b82ffa982664b7fbaf")
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = service.NewDropboxService("pYTxO8EdjVEAAAAAAAAF_JqkFisAR6HLpjNlBSy1crQ_xtw1aTMiHx5aS0VV4UgW")
+	dbs, err := service.NewDropboxService("pYTxO8EdjVEAAAAAAAAF_JqkFisAR6HLpjNlBSy1crQ_xtw1aTMiHx5aS0VV4UgW")
 	if err != nil {
 		return nil, err
 	}
@@ -26,5 +26,5 @@ func Manager(fd string) (*manager.Manager, error) {
 		return nil, err
 	}
 
-	return manager.NewManager(c, tws), nil
+	return manager.NewManager(c, bts, dbs, tws), nil
 }

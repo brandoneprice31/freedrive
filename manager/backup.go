@@ -16,7 +16,9 @@ func (m *Manager) Backup(backupPath string) {
 	fmt.Println("removing old backup")
 
 	k, err := loadKey(m.config.KeyPath)
-	if err != nil {
+	if err == ErrNoKey {
+		os.Mkdir(m.config.KeyPath, 0777)
+	} else if err != nil {
 		panic(err)
 	}
 

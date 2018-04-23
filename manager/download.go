@@ -104,23 +104,6 @@ func createDownloadFolder(path string) error {
 	return os.Mkdir(path, 0777)
 }
 
-func loadKey(path string) (*key, error) {
-	data, err := ioutil.ReadFile(path)
-	if pErr, ok := err.(*os.PathError); ok && pErr.Err.Error() == "no such file or directory" {
-		return nil, ErrNoKey
-	} else if err != nil {
-		return nil, err
-	}
-
-	var k key
-	err = json.Unmarshal(data, &k)
-	if err != nil {
-		return nil, err
-	}
-
-	return &k, nil
-}
-
 func (m *Manager) flushDownload() ([][]byte, error) {
 	rr := [][]byte{}
 	for _, b := range m.bufs {
