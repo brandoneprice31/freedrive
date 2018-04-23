@@ -9,6 +9,9 @@ type (
 		// in a single request.
 		BufferSize() int
 
+		// The maximum storages this service allows.
+		MaxStorageSize() int
+
 		// MaxThreads returns the maximum number of concurrent threads that are able
 		// to access your service at once.
 		MaxThreads() int

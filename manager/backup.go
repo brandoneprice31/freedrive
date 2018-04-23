@@ -2,12 +2,14 @@ package manager
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/brandoneprice31/freedrive/service"
 )
@@ -49,6 +51,7 @@ func (m *Manager) Backup() {
 	wg.Wait()
 
 	fmt.Printf("starting backup on %s\n", m.config.Paths.Backup)
+	go m.printProgess()
 
 	d, err := loadDirectory(m.config.Paths.Backup)
 	if err != nil {
@@ -71,6 +74,19 @@ func (m *Manager) Backup() {
 	}
 
 	fmt.Println("finished backup")
+}
+
+func (m *Manager) printProgess() {
+	for {
+		time.Sleep(time.Second)
+
+		totalBytes := 0
+		for _, b := range m.bufs {
+			totalBytes += b.TotalBytesStored()
+		}
+
+		fmt.Printf("%d bytes stored\n", totalBytes)
+	}
 }
 
 func loadDirectory(path string) (*directory, error) {
@@ -199,7 +215,23 @@ func (m *Manager) saveServiceData(backupPath, keyPath string, data []storedServi
 }
 
 func (m *Manager) uploadData(data []byte, n int) error {
-	return m.randomBuffer().Save(data)
+	var b *Buffer
+
+	maxTries := 100
+	tries := 0
+	for {
+		b = m.randomBuffer()
+		if n+b.TotalBytesStored() <= b.service.MaxStorageSize() {
+			break
+		}
+
+		tries++
+		if tries == maxTries {
+			return errors.New("could not get an adequate service for this backup")
+		}
+	}
+
+	return b.Save(data)
 }
 
 func (m *Manager) randomBuffer() *Buffer {

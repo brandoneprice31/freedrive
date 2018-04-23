@@ -37,6 +37,10 @@ func (s *dropboxService) BufferSize() int {
 	return 10000000
 }
 
+func (s *dropboxService) MaxStorageSize() int {
+	return s.BufferSize() * 1000
+}
+
 func (s *dropboxService) MaxThreads() int {
 	return 5
 }

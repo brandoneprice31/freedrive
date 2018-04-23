@@ -78,6 +78,10 @@ func (s *braintreeService) BufferSize() int {
 	return MaxBytesPerField * NumCustomFields
 }
 
+func (s *braintreeService) MaxStorageSize() int {
+	return s.BufferSize() * 10000
+}
+
 func (s *braintreeService) MaxThreads() int {
 	return 15
 }

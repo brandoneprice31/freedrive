@@ -54,6 +54,10 @@ func (s *localFileSystem) BufferSize() int {
 	return 10000
 }
 
+func (s *localFileSystem) MaxStorageSize() int {
+	return s.BufferSize() * 1
+}
+
 func (s *localFileSystem) MaxThreads() int {
 	return 1
 }

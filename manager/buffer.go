@@ -11,7 +11,9 @@ import (
 
 type (
 	Buffer struct {
-		service service.Service
+		service          service.Service
+		totalBytesStored int
+		tbsMutex         *sync.Mutex
 
 		serviceData []service.ServiceData
 		wg          *sync.WaitGroup
@@ -59,6 +61,7 @@ func NewBackupBuffer(s service.Service) (*Buffer, error) {
 
 	return &Buffer{
 		service:        s,
+		tbsMutex:       &sync.Mutex{},
 		wg:             &sync.WaitGroup{},
 		sdMutex:        &sync.Mutex{},
 		seMutex:        &sync.Mutex{},
@@ -140,9 +143,14 @@ func (b *Buffer) uploadBuf() error {
 		b.concCount++
 		b.concCountMutex.Unlock()
 
-		enc := encrypt.Encrypt(string(data), EncryptionKey)
+		b.tbsMutex.Lock()
+		b.totalBytesStored += len(data)
+		b.tbsMutex.Unlock()
 
-		sd, err := b.service.Upload([]byte(enc))
+		enc := encrypt.Encrypt(string(data), EncryptionKey)
+		encData := []byte(enc)
+
+		sd, err := b.service.Upload(encData)
 		if err != nil {
 			b.appendServiceErr(err)
 		} else {
@@ -170,6 +178,12 @@ func (b *Buffer) appendServiceErr(err error) {
 	b.seMutex.Lock()
 	b.serviceErrs = append(b.serviceErrs, err)
 	b.seMutex.Unlock()
+}
+
+func (b *Buffer) TotalBytesStored() int {
+	b.tbsMutex.Lock()
+	defer b.tbsMutex.Unlock()
+	return b.totalBytesStored
 }
 
 func (b *Buffer) FlushBackup() ([]service.ServiceData, error) {

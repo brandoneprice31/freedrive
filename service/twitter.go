@@ -32,6 +32,10 @@ func (s *twitterService) MaxThreads() int {
 	return 5
 }
 
+func (s *twitterService) MaxStorageSize() int {
+	return s.BufferSize() * 150
+}
+
 func (s *twitterService) NewBackup() error {
 	return nil
 }
