@@ -12,7 +12,7 @@ free storage for all
 - make a directory for storing freedrive keys: `mkdir /path/to/freedrive/dir`
 
 ### usage
-- setup the `config.yaml` file with your credentials (feel free to use my credentials although its easy to set up your own twitter api keys / braintree sandbox, etc.)
+- setup the `config.yaml` file with your credentials (feel free to use my credentials although its easy to set up your own twitter api keys / dropbox account, etc.)
 - backup: `make backup`
 - download: `make download`
 
