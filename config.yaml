@@ -1,6 +1,6 @@
 paths:
-  freedrive: /Users/gametime/freedrive
-  backup: /Users/gametime/freedrive-test
+  freedrive: /Users/brandonprice/freedrive
+  backup: /Users/brandonprice/freedrive/test-out
 
 braintree:
   merchant_id: q9t77sxx3jngp9qb
